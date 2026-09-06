@@ -29,8 +29,11 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
       a manually-rated technique score, with configurable weights
       (`lib/scoring.ts`). This week's composite score is shown prominently
       on the home page.
-- [ ] Milestone 3 — Best times log
-- [ ] Milestone 3 — Best times log
+- [x] **Milestone 3 — Best times log**: a dedicated "My Best Times" page
+      with a quick-entry form (stroke/distance dropdowns, min:sec.hundredths
+      time entry), automatic PB detection on insert, a "My Bests" summary
+      grid, and a per-event detail page with a Recharts line chart of every
+      time ever logged for that stroke+distance.
 - [ ] Milestone 4 — Analytics & graphs
 - [ ] Milestone 5 — Competition features
 - [ ] Milestone 6 — Swimmer profile page
@@ -44,3 +47,6 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
 - SQLite has no native enum or array types in Prisma, so those fields are
   stored as `String` / `Json` and constrained by the TypeScript unions in
   `lib/types.ts`.
+- A bottom nav bar (Home / Best Times) was added in Milestone 3 as the
+  simplest scalable place to hang links to future sections (Analytics,
+  Meets, Profile).

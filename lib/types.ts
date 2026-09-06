@@ -24,6 +24,8 @@ export type Equipment = (typeof EQUIPMENT)[number];
 export const BEST_TIME_CONTEXTS = ["Practice", "TimeTrial", "Meet"] as const;
 export type BestTimeContext = (typeof BEST_TIME_CONTEXTS)[number];
 
+export const EVENT_DISTANCES = [25, 50, 100, 200, 400, 800, 1500] as const;
+
 export interface MeetEvent {
   stroke: Stroke;
   distance: number;

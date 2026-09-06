@@ -160,3 +160,41 @@ export async function updateTechniqueScore(formData: FormData) {
   await prisma.swimmer.update({ where: { id: swimmerId }, data: { techniqueScore } });
   revalidatePath("/");
 }
+
+export async function addBestTime(formData: FormData) {
+  const swimmerId = String(formData.get("swimmerId") || "");
+  const stroke = String(formData.get("stroke") || "");
+  const distance = Number(formData.get("distance"));
+  const context = String(formData.get("context") || "");
+  const dateRaw = String(formData.get("date") || "");
+  const minute = Number(formData.get("minute") || 0);
+  const second = Number(formData.get("second") || 0);
+  const hundredth = Number(formData.get("hundredth") || 0);
+  const timeSeconds = minute * 60 + second + hundredth / 100;
+
+  if (
+    !swimmerId ||
+    !stroke ||
+    !context ||
+    !dateRaw ||
+    !Number.isFinite(distance) ||
+    distance <= 0 ||
+    !Number.isFinite(timeSeconds) ||
+    timeSeconds <= 0
+  ) {
+    throw new Error("Please provide a valid stroke, distance, time, context, and date.");
+  }
+
+  const currentBest = await prisma.bestTime.findFirst({
+    where: { swimmerId, stroke, distance },
+    orderBy: { timeSeconds: "asc" },
+  });
+  const isPB = !currentBest || timeSeconds < currentBest.timeSeconds;
+
+  await prisma.bestTime.create({
+    data: { swimmerId, stroke, distance, timeSeconds, context, date: new Date(dateRaw), isPB },
+  });
+
+  revalidatePath("/best-times");
+  redirect(isPB ? "/best-times?pb=1" : "/best-times");
+}

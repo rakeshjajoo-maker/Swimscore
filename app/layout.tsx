@@ -5,6 +5,7 @@ import "./globals.css";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSwimmerId } from "@/lib/currentSwimmer";
 import { SwimmerPicker } from "@/components/SwimmerPicker";
+import { BottomNav } from "@/components/BottomNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,9 +47,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             )}
           </div>
         </header>
-        <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-6">
+        <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-6 pb-20">
           {children}
         </main>
+        <BottomNav />
       </body>
     </html>
   );

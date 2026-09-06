@@ -19,6 +19,14 @@ export function formatSetLine(set: {
   return `${set.reps} × ${set.distancePerRep} ${set.stroke}${interval ? ` @ ${interval}` : ""}`;
 }
 
+/** Formats a race time given in total seconds as "M:SS.hh" (or "S.hh" under a minute). */
+export function formatRaceTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds - minutes * 60;
+  const secondsStr = seconds.toFixed(2).padStart(5, "0");
+  return minutes > 0 ? `${minutes}:${secondsStr}` : seconds.toFixed(2);
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString(undefined, {
