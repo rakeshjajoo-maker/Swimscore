@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NOTE: SQLite has no native enum type in Prisma, so "enum" fields below are
+// stored as String and constrained by TypeScript union types in lib/types.ts.
+// SQLite also has no native scalar-list type, so array fields are stored as
+// Json (a serialized JSON array) instead of String[]/Float[].
+
+model Swimmer {
+  id                  String   @id @default(cuid())
+  name                String
+  age                 Int
+  squad               String
+  primaryStroke       String // Free | Back | Breast | Fly | IM
+  competitionCategory String // e.g. "100m Free specialist"
+  seasonGoal          String?
+  techniqueScore      Int? // 1-100, manual self/coach rating; feeds SwimScore until a technique-rating UI exists
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  sessions  Session[]
+  bestTimes BestTime[]
+  meets     Meet[]
+  snapshots SwimScoreSnapshot[]
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  swimmerId   String
+  date        DateTime
+  sessionType String // Regular | Taper | MeetWarmup
+  totalMeters Int      @default(0)
+  preMood     Int?
+  postMood    Int?
+  attended    Boolean  @default(true)
+  skipReason  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  swimmer Swimmer @relation(fields: [swimmerId], references: [id], onDelete: Cascade)
+  sets    Set[]
+
+  @@index([swimmerId, date])
+}
+
+model Set {
+  id                 String   @id @default(cuid())
+  sessionId          String
+  setType            String // WarmUp | Drill | Kick | Pull | Main | Sprint | CoolDown
+  reps               Int
+  distancePerRep     Int // meters
+  stroke             String // Free | Back | Breast | Fly | IM | Choice
+  intervalSeconds    Int?
+  equipment          Json? // array of: Fins | Paddles | Snorkel | Buoy | None
+  actualTimesSeconds Json? // array of numbers, one per rep, if timed
+  rpe                Int? // 1-10, self-rated effort
+  notes              String?
+  createdAt          DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model BestTime {
+  id          String   @id @default(cuid())
+  swimmerId   String
+  stroke      String // Free | Back | Breast | Fly | IM
+  distance    Int // meters
+  timeSeconds Float
+  context     String // Practice | TimeTrial | Meet
+  date        DateTime
+  isPB        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  swimmer Swimmer @relation(fields: [swimmerId], references: [id], onDelete: Cascade)
+
+  @@index([swimmerId, stroke, distance])
+}
+
+model Meet {
+  id        String   @id @default(cuid())
+  swimmerId String
+  name      String
+  date      DateTime
+  events    Json // array of { stroke, distance, goalTimeSeconds, actualTimeSeconds, splits: number[], reactionTime }
+  createdAt DateTime @default(now())
+
+  swimmer Swimmer @relation(fields: [swimmerId], references: [id], onDelete: Cascade)
+
+  @@index([swimmerId])
+}
+
+model SwimScoreSnapshot {
+  id                   String   @id @default(cuid())
+  swimmerId            String
+  weekStartDate        DateTime
+  volumeScore          Float
+  consistencyScore     Float
+  effortAlignmentScore Float
+  timeTrendScore       Float
+  techniqueScore       Float
+  compositeScore       Float
+  createdAt            DateTime @default(now())
+
+  swimmer Swimmer @relation(fields: [swimmerId], references: [id], onDelete: Cascade)
+
+  @@unique([swimmerId, weekStartDate])
+}
