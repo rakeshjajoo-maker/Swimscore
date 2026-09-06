@@ -117,7 +117,7 @@ async function main() {
     ],
   });
 
-  console.log(`Seeded swimmer ${swimmer.name} (${swimmer.id}) with 7 sessions across 4 weeks.`);
+  console.log(`Seeded swimmer ${swimmer.name} (${swimmer.id}) with 9 sessions across 4 weeks.`);
 }
 
 main()

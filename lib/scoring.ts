@@ -13,7 +13,7 @@ export const SCORE_WEIGHTS = {
 
 // Expected RPE band per set type, used by effortAlignmentScore. WarmUp/CoolDown
 // should be easy; Main/Sprint should be hard.
-const EXPECTED_RPE_RANGE: Record<SetType, [number, number]> = {
+export const EXPECTED_RPE_RANGE: Record<SetType, [number, number]> = {
   WarmUp: [1, 4],
   Drill: [2, 5],
   Kick: [3, 6],
@@ -40,7 +40,7 @@ export function getWeekStart(date: Date): Date {
   return d;
 }
 
-function addDays(date: Date, days: number): Date {
+export function addDays(date: Date, days: number): Date {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;

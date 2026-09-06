@@ -34,7 +34,15 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
       time entry), automatic PB detection on insert, a "My Bests" summary
       grid, and a per-event detail page with a Recharts line chart of every
       time ever logged for that stroke+distance.
-- [ ] Milestone 4 — Analytics & graphs
+- [x] **Milestone 4 — Analytics & graphs**: a dedicated `/analytics` section
+      with four tabs — Volume & Consistency (weekly bar chart, a
+      GitHub-style calendar heatmap, attendance line chart), Performance
+      Trends (per-event BestTime line charts and a seconds-improved-per-month
+      summary per stroke), Effort & Mood (actual vs. expected RPE band per
+      set type, pre/post mood trend), and Composite SwimScore (score over
+      time, a radar chart of the five sub-scores). `lib/analytics.ts` holds
+      the aggregation queries; historical `SwimScoreSnapshot` rows are
+      backfilled on demand when the SwimScore tab is viewed.
 - [ ] Milestone 5 — Competition features
 - [ ] Milestone 6 — Swimmer profile page
 
@@ -47,6 +55,10 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
 - SQLite has no native enum or array types in Prisma, so those fields are
   stored as `String` / `Json` and constrained by the TypeScript unions in
   `lib/types.ts`.
-- A bottom nav bar (Home / Best Times) was added in Milestone 3 as the
-  simplest scalable place to hang links to future sections (Analytics,
-  Meets, Profile).
+- A bottom nav bar (Home / Best Times / Analytics) was added starting in
+  Milestone 3 as the simplest scalable place to hang links to future
+  sections (Meets, Profile).
+- Recharts line charts use `type="linear"` rather than `"monotone"`: with
+  sparse weekly data that jumps sharply (e.g. an inactive week next to a
+  heavy training week), monotone's cubic smoothing can visually overshoot
+  and make a correctly-connected line look disjointed.

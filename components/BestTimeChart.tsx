@@ -49,7 +49,7 @@ export function BestTimeChart({ data }: { data: BestTimePoint[] }) {
             contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: "#bfe1f2" }}
           />
           <Line
-            type="monotone"
+            type="linear"
             dataKey="timeSeconds"
             stroke="#2b729d"
             strokeWidth={2}
