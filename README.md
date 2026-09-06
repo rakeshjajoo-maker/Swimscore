@@ -24,7 +24,12 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
 - [x] **Milestone 1 — Core Logging**: swimmer profile creation, "Log a
       Session" whiteboard-style set entry with live auto-calculated total
       meters, and chronological session history.
-- [ ] Milestone 2 — SwimScore calculation
+- [x] **Milestone 2 — SwimScore calculation**: weekly `SwimScoreSnapshot`
+      computed from volume, consistency, effort alignment, time trend, and
+      a manually-rated technique score, with configurable weights
+      (`lib/scoring.ts`). This week's composite score is shown prominently
+      on the home page.
+- [ ] Milestone 3 — Best times log
 - [ ] Milestone 3 — Best times log
 - [ ] Milestone 4 — Analytics & graphs
 - [ ] Milestone 5 — Competition features

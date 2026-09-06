@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSwimmerId } from "@/lib/currentSwimmer";
 import { formatDate, formatMeters, formatSetLine } from "@/lib/format";
+import { ensureWeeklySnapshot, getWeekStart } from "@/lib/scoring";
+import { SwimScoreCard } from "@/components/SwimScoreCard";
 
 export default async function HomePage() {
   const swimmers = await prisma.swimmer.findMany({ orderBy: { createdAt: "asc" } });
@@ -23,12 +25,15 @@ export default async function HomePage() {
   const currentId = (await getCurrentSwimmerId()) ?? swimmers[0].id;
   const swimmer = swimmers.find((s) => s.id === currentId) ?? swimmers[0];
 
-  const sessions = await prisma.session.findMany({
-    where: { swimmerId: swimmer.id },
-    orderBy: { date: "desc" },
-    include: { sets: true },
-    take: 30,
-  });
+  const [sessions, snapshot] = await Promise.all([
+    prisma.session.findMany({
+      where: { swimmerId: swimmer.id },
+      orderBy: { date: "desc" },
+      include: { sets: true },
+      take: 30,
+    }),
+    ensureWeeklySnapshot(swimmer.id, getWeekStart(new Date())),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -42,6 +47,12 @@ export default async function HomePage() {
           + Log a session
         </Link>
       </section>
+
+      <SwimScoreCard
+        swimmerId={swimmer.id}
+        breakdown={snapshot}
+        techniqueScore={swimmer.techniqueScore}
+      />
 
       <section>
         <h2 className="text-lg font-semibold text-pool-900 mb-3">Session history</h2>

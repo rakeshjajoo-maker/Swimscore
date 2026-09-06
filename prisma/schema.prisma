@@ -23,6 +23,7 @@ model Swimmer {
   primaryStroke       String // Free | Back | Breast | Fly | IM
   competitionCategory String // e.g. "100m Free specialist"
   seasonGoal          String?
+  techniqueScore      Int? // 1-100, manual self/coach rating; feeds SwimScore until a technique-rating UI exists
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

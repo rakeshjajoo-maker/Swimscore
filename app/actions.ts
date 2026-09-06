@@ -146,3 +146,17 @@ export async function finishSession(formData: FormData) {
   revalidatePath("/");
   redirect("/");
 }
+
+export async function updateTechniqueScore(formData: FormData) {
+  const swimmerId = String(formData.get("swimmerId") || "");
+  const raw = formData.get("techniqueScore");
+  const techniqueScore = raw && String(raw).trim() !== "" ? Number(raw) : null;
+
+  if (!swimmerId) return;
+  if (techniqueScore != null && (!Number.isFinite(techniqueScore) || techniqueScore < 1 || techniqueScore > 100)) {
+    throw new Error("Technique score must be between 1 and 100.");
+  }
+
+  await prisma.swimmer.update({ where: { id: swimmerId }, data: { techniqueScore } });
+  revalidatePath("/");
+}
