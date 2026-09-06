@@ -135,7 +135,7 @@ export async function computeWeeklyScore(
     }),
     prisma.session.findMany({
       where: { swimmerId, date: { gte: trailingStart, lt: weekStart } },
-      select: { totalMeters: true },
+      select: { totalMeters: true, sessionType: true },
     }),
     prisma.bestTime.findMany({
       where: {
@@ -146,16 +146,25 @@ export async function computeWeeklyScore(
     }),
   ]);
 
-  const thisWeekMeters = thisWeekSessions.reduce((sum, s) => sum + s.totalMeters, 0);
+  // Taper Mode: a swimmer tapering before a meet is *supposed* to cut volume,
+  // so Taper sessions are excluded from both sides of the volumeScore ratio -
+  // they don't count as "this week's meters" and they don't drag down the
+  // trailing baseline other weeks get compared against.
+  const hasTaperSessionThisWeek = thisWeekSessions.some((s) => s.sessionType === "Taper");
+  const thisWeekMeters = thisWeekSessions
+    .filter((s) => s.sessionType !== "Taper")
+    .reduce((sum, s) => sum + s.totalMeters, 0);
   const trailing4WeekAvgMeters =
-    trailingSessions.reduce((sum, s) => sum + s.totalMeters, 0) / 4;
+    trailingSessions
+      .filter((s) => s.sessionType !== "Taper")
+      .reduce((sum, s) => sum + s.totalMeters, 0) / 4;
 
   const attendedCount = thisWeekSessions.filter((s) => s.attended).length;
   const expectedCount = thisWeekSessions.length;
 
   const allSets = thisWeekSessions.flatMap((s) => s.sets);
 
-  const vScore = volumeScore(thisWeekMeters, trailing4WeekAvgMeters);
+  const vScore = hasTaperSessionThisWeek ? 100 : volumeScore(thisWeekMeters, trailing4WeekAvgMeters);
   const cScore = consistencyScore(attendedCount, expectedCount);
   const eScore = effortAlignmentScore(allSets);
   const tScore = timeTrendScore(bestTimes);

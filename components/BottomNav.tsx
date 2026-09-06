@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "🏠" },
   { href: "/best-times", label: "Best Times", icon: "⏱️" },
   { href: "/analytics", label: "Analytics", icon: "📊" },
+  { href: "/meets", label: "Meets", icon: "🏆" },
 ];
 
 export function BottomNav() {
@@ -21,7 +22,7 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center gap-0.5 px-4 py-2 text-xs font-medium ${
+            className={`flex flex-col items-center gap-0.5 px-2 py-2 text-xs font-medium ${
               active ? "text-coral-600" : "text-pool-600"
             }`}
           >

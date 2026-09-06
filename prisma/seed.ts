@@ -117,6 +117,26 @@ async function main() {
     ],
   });
 
+  await prisma.meet.create({
+    data: {
+      swimmerId: swimmer.id,
+      name: "City Invitational",
+      date: daysAgo(14),
+      events: [
+        {
+          stroke: "Free",
+          distance: 100,
+          goalTimeSeconds: 58.0,
+          actualTimeSeconds: 57.1,
+          splits: [27.3, 29.8],
+          reactionTime: 0.64,
+        },
+        { stroke: "Free", distance: 50, goalTimeSeconds: 27.0, actualTimeSeconds: 26.8 },
+        { stroke: "Free", distance: 200, goalTimeSeconds: 130.0 },
+      ],
+    },
+  });
+
   console.log(`Seeded swimmer ${swimmer.name} (${swimmer.id}) with 9 sessions across 4 weeks.`);
 }
 

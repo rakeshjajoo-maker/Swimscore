@@ -43,7 +43,16 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
       time, a radar chart of the five sub-scores). `lib/analytics.ts` holds
       the aggregation queries; historical `SwimScoreSnapshot` rows are
       backfilled on demand when the SwimScore tab is viewed.
-- [ ] Milestone 5 — Competition features
+- [x] **Milestone 5 — Competition features**: a `/meets` section — create a
+      meet, add events with goal times, enter post-meet results (actual
+      time, comma-separated splits, reaction time) with a goal-vs-actual
+      comparison and a split breakdown chart per event. A result also
+      records a `BestTime` (context `Meet`) through the same PB-detection
+      helper Best Times uses, so a great meet swim shows up there too.
+      Added "Taper Mode": a session with `sessionType: "Taper"` is excluded
+      from both sides of `volumeScore`'s ratio (its own meters, and the
+      trailing 4-week baseline), so intentionally cutting volume before a
+      meet no longer tanks the score.
 - [ ] Milestone 6 — Swimmer profile page
 
 ## Notes
@@ -55,9 +64,13 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
 - SQLite has no native enum or array types in Prisma, so those fields are
   stored as `String` / `Json` and constrained by the TypeScript unions in
   `lib/types.ts`.
-- A bottom nav bar (Home / Best Times / Analytics) was added starting in
-  Milestone 3 as the simplest scalable place to hang links to future
-  sections (Meets, Profile).
+- A bottom nav bar (Home / Best Times / Analytics / Meets) was added
+  starting in Milestone 3 as the simplest scalable place to hang links to
+  future sections (Profile next).
+- `Meet.events` is a single Json array field rather than a child table, so
+  adding/editing/deleting one event means reading the array, mutating it,
+  and writing the whole array back - fine at meet-sized (a few events)
+  scale.
 - Recharts line charts use `type="linear"` rather than `"monotone"`: with
   sparse weekly data that jumps sharply (e.g. an inactive week next to a
   heavy training week), monotone's cubic smoothing can visually overshoot

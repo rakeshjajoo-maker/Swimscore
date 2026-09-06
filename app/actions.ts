@@ -3,8 +3,15 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentSwimmerId, SWIMMER_COOKIE } from "@/lib/currentSwimmer";
+import { recordBestTime } from "@/lib/bestTimes";
+import type { MeetEvent } from "@/lib/types";
+
+function toJson(events: MeetEvent[]): Prisma.InputJsonValue {
+  return events as unknown as Prisma.InputJsonValue;
+}
 
 const SWIMMER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
@@ -185,16 +192,114 @@ export async function addBestTime(formData: FormData) {
     throw new Error("Please provide a valid stroke, distance, time, context, and date.");
   }
 
-  const currentBest = await prisma.bestTime.findFirst({
-    where: { swimmerId, stroke, distance },
-    orderBy: { timeSeconds: "asc" },
-  });
-  const isPB = !currentBest || timeSeconds < currentBest.timeSeconds;
-
-  await prisma.bestTime.create({
-    data: { swimmerId, stroke, distance, timeSeconds, context, date: new Date(dateRaw), isPB },
+  const { isPB } = await recordBestTime({
+    swimmerId,
+    stroke,
+    distance,
+    timeSeconds,
+    context,
+    date: new Date(dateRaw),
   });
 
   revalidatePath("/best-times");
   redirect(isPB ? "/best-times?pb=1" : "/best-times");
+}
+
+export async function createMeet(formData: FormData) {
+  const swimmerId = await getCurrentSwimmerId();
+  if (!swimmerId) {
+    redirect("/swimmers/new");
+  }
+
+  const name = String(formData.get("name") || "").trim();
+  const dateRaw = String(formData.get("date") || "");
+
+  if (!name || !dateRaw) {
+    throw new Error("Please provide a meet name and date.");
+  }
+
+  const meet = await prisma.meet.create({
+    data: { swimmerId, name, date: new Date(dateRaw), events: [] },
+  });
+
+  redirect(`/meets/${meet.id}`);
+}
+
+function timeFromParts(formData: FormData): number | undefined {
+  const minute = Number(formData.get("minute") || 0);
+  const second = Number(formData.get("second") || 0);
+  const hundredth = Number(formData.get("hundredth") || 0);
+  const seconds = minute * 60 + second + hundredth / 100;
+  return seconds > 0 ? seconds : undefined;
+}
+
+export async function addMeetEvent(formData: FormData) {
+  const meetId = String(formData.get("meetId") || "");
+  const stroke = String(formData.get("stroke") || "");
+  const distance = Number(formData.get("distance"));
+  const goalTimeSeconds = timeFromParts(formData);
+
+  if (!meetId || !stroke || !Number.isFinite(distance) || distance <= 0) {
+    throw new Error("Please provide a valid stroke and distance.");
+  }
+
+  const meet = await prisma.meet.findUniqueOrThrow({ where: { id: meetId } });
+  const events = (meet.events as unknown as MeetEvent[]) ?? [];
+  events.push({ stroke: stroke as MeetEvent["stroke"], distance, goalTimeSeconds });
+
+  await prisma.meet.update({ where: { id: meetId }, data: { events: toJson(events) } });
+  revalidatePath(`/meets/${meetId}`);
+}
+
+export async function deleteMeetEvent(formData: FormData) {
+  const meetId = String(formData.get("meetId") || "");
+  const index = Number(formData.get("index"));
+  if (!meetId || !Number.isFinite(index)) return;
+
+  const meet = await prisma.meet.findUniqueOrThrow({ where: { id: meetId } });
+  const events = (meet.events as unknown as MeetEvent[]) ?? [];
+  events.splice(index, 1);
+
+  await prisma.meet.update({ where: { id: meetId }, data: { events: toJson(events) } });
+  revalidatePath(`/meets/${meetId}`);
+}
+
+export async function recordMeetResult(formData: FormData) {
+  const meetId = String(formData.get("meetId") || "");
+  const index = Number(formData.get("index"));
+  const actualTimeSeconds = timeFromParts(formData);
+  const splitsRaw = String(formData.get("splits") || "").trim();
+  const splits = splitsRaw
+    ? splitsRaw
+        .split(/[,\s]+/)
+        .map(Number)
+        .filter((n) => Number.isFinite(n) && n > 0)
+    : undefined;
+  const reactionTimeRaw = formData.get("reactionTime");
+  const reactionTime =
+    reactionTimeRaw && String(reactionTimeRaw).trim() !== "" ? Number(reactionTimeRaw) : undefined;
+
+  if (!meetId || !Number.isFinite(index) || !actualTimeSeconds) {
+    throw new Error("Please provide a valid result time.");
+  }
+
+  const meet = await prisma.meet.findUniqueOrThrow({ where: { id: meetId } });
+  const events = (meet.events as unknown as MeetEvent[]) ?? [];
+  const event = events[index];
+  if (!event) throw new Error("Event not found.");
+
+  events[index] = { ...event, actualTimeSeconds, splits, reactionTime };
+  await prisma.meet.update({ where: { id: meetId }, data: { events: toJson(events) } });
+
+  await recordBestTime({
+    swimmerId: meet.swimmerId,
+    stroke: event.stroke,
+    distance: event.distance,
+    timeSeconds: actualTimeSeconds,
+    context: "Meet",
+    date: meet.date,
+  });
+
+  revalidatePath(`/meets/${meetId}`);
+  revalidatePath("/best-times");
 }

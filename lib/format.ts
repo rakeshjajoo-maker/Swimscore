@@ -27,6 +27,15 @@ export function formatRaceTime(totalSeconds: number): string {
   return minutes > 0 ? `${minutes}:${secondsStr}` : seconds.toFixed(2);
 }
 
+/** Splits a total-seconds race time back into minute/second/hundredth parts, for pre-filling time-entry forms. */
+export function secondsToParts(totalSeconds: number): { minute: number; second: number; hundredth: number } {
+  const minute = Math.floor(totalSeconds / 60);
+  const remainder = totalSeconds - minute * 60;
+  const second = Math.floor(remainder);
+  const hundredth = Math.round((remainder - second) * 100);
+  return { minute, second, hundredth };
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString(undefined, {
