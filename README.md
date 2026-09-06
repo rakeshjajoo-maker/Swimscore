@@ -53,7 +53,16 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
       from both sides of `volumeScore`'s ratio (its own meters, and the
       trailing 4-week baseline), so intentionally cutting volume before a
       meet no longer tanks the score.
-- [ ] Milestone 6 — Swimmer profile page
+- [x] **Milestone 6 — Swimmer profile page**: a `/profile` page — the
+      swimmer's "identity card" per the brief. Quick-glance stat cards
+      (this week's composite SwimScore, personal-best count, all-time
+      meters logged, current logging streak), an editable details form
+      (name, age, squad, primary stroke, competition category, season
+      goal), and a compact personal-bests table reusing the same
+      `getCurrentBests` helper the Best Times page uses (refactored that
+      page to share it instead of duplicating the grouping logic).
+
+All six milestones from the build prompt are now built.
 
 ## Notes
 
@@ -75,3 +84,9 @@ Built milestone by milestone, per the build prompt in `docs/build-prompt.md`.
   sparse weekly data that jumps sharply (e.g. an inactive week next to a
   heavy training week), monotone's cubic smoothing can visually overshoot
   and make a correctly-connected line look disjointed.
+- Two profile stats needed a judgment call since the spec didn't pin them
+  down exactly: "meters logged this season" is shown as all-time, since
+  there's no season concept in the data model yet; and "logging streak"
+  counts consecutive days with an *attended* session (a logged-but-skipped
+  day breaks it), with today itself not breaking an ongoing streak until
+  the day is over without anything logged.

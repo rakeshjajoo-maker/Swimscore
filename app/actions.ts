@@ -303,3 +303,25 @@ export async function recordMeetResult(formData: FormData) {
   revalidatePath(`/meets/${meetId}`);
   revalidatePath("/best-times");
 }
+
+export async function updateSwimmerProfile(formData: FormData) {
+  const swimmerId = String(formData.get("swimmerId") || "");
+  const name = String(formData.get("name") || "").trim();
+  const age = Number(formData.get("age"));
+  const squad = String(formData.get("squad") || "").trim();
+  const primaryStroke = String(formData.get("primaryStroke") || "");
+  const competitionCategory = String(formData.get("competitionCategory") || "").trim();
+  const seasonGoal = String(formData.get("seasonGoal") || "").trim() || null;
+
+  if (!swimmerId || !name || !squad || !competitionCategory || !Number.isFinite(age) || age <= 0) {
+    throw new Error("Please fill in all required swimmer fields.");
+  }
+
+  await prisma.swimmer.update({
+    where: { id: swimmerId },
+    data: { name, age, squad, primaryStroke, competitionCategory, seasonGoal },
+  });
+
+  revalidatePath("/profile");
+  revalidatePath("/", "layout");
+}

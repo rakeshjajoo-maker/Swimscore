@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { getCurrentSwimmerId } from "@/lib/currentSwimmer";
 import { addBestTime } from "@/app/actions";
+import { getCurrentBests } from "@/lib/analytics";
 import { STROKES, EVENT_DISTANCES, BEST_TIME_CONTEXTS } from "@/lib/types";
 import { formatDate, formatRaceTime } from "@/lib/format";
 
@@ -19,22 +19,7 @@ export default async function BestTimesPage({
   const { pb } = await searchParams;
   const today = new Date().toISOString().slice(0, 10);
 
-  const bestTimes = await prisma.bestTime.findMany({
-    where: { swimmerId },
-    orderBy: { date: "desc" },
-  });
-
-  const bestByEvent = new Map<string, (typeof bestTimes)[number]>();
-  for (const bt of bestTimes) {
-    const key = `${bt.stroke}-${bt.distance}`;
-    const current = bestByEvent.get(key);
-    if (!current || bt.timeSeconds < current.timeSeconds) {
-      bestByEvent.set(key, bt);
-    }
-  }
-  const cards = [...bestByEvent.values()].sort(
-    (a, b) => a.stroke.localeCompare(b.stroke) || a.distance - b.distance
-  );
+  const cards = await getCurrentBests(swimmerId);
 
   return (
     <div className="space-y-6">

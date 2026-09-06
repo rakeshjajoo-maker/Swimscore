@@ -262,3 +262,63 @@ export async function getScoreHistory(swimmerId: string, weeks = 12) {
   }
   return snapshots;
 }
+
+export interface CurrentBest {
+  stroke: string;
+  distance: number;
+  timeSeconds: number;
+  date: Date;
+}
+
+/** The current PB per stroke+distance combination (no data model has no "season" concept, so this covers all history). */
+export async function getCurrentBests(swimmerId: string): Promise<CurrentBest[]> {
+  const rows = await prisma.bestTime.findMany({ where: { swimmerId }, orderBy: { date: "desc" } });
+
+  const bestByEvent = new Map<string, CurrentBest>();
+  for (const r of rows) {
+    const key = `${r.stroke}-${r.distance}`;
+    const current = bestByEvent.get(key);
+    if (!current || r.timeSeconds < current.timeSeconds) {
+      bestByEvent.set(key, { stroke: r.stroke, distance: r.distance, timeSeconds: r.timeSeconds, date: r.date });
+    }
+  }
+
+  return [...bestByEvent.values()].sort(
+    (a, b) => a.stroke.localeCompare(b.stroke) || a.distance - b.distance
+  );
+}
+
+/** Total meters ever logged. There's no "season" concept in the data model yet, so this is all-time. */
+export async function getTotalMetersAllTime(swimmerId: string): Promise<number> {
+  const result = await prisma.session.aggregate({
+    where: { swimmerId },
+    _sum: { totalMeters: true },
+  });
+  return result._sum.totalMeters ?? 0;
+}
+
+/**
+ * Consecutive days (walking back from today) with at least one attended session.
+ * Today doesn't break the streak just because it hasn't happened yet - the streak
+ * still shows as ongoing from yesterday until a full day passes with nothing logged.
+ */
+export async function getLoggingStreak(swimmerId: string): Promise<number> {
+  const sessions = await prisma.session.findMany({
+    where: { swimmerId, attended: true },
+    select: { date: true },
+  });
+  const dates = new Set(sessions.map((s) => dayKey(s.date)));
+
+  let cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!dates.has(dayKey(cursor))) {
+    cursor = addDays(cursor, -1);
+  }
+
+  let streak = 0;
+  while (dates.has(dayKey(cursor))) {
+    streak++;
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
