@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --background: #eef6fb;
+  --foreground: #0f2a3a;
+
+  --color-pool-50: #f2f9fd;
+  --color-pool-100: #e0f0f9;
+  --color-pool-200: #bfe1f2;
+  --color-pool-300: #8fcbe8;
+  --color-pool-400: #5babd4;
+  --color-pool-500: #3a8fbf;
+  --color-pool-600: #2b729d;
+  --color-pool-700: #245a7d;
+  --color-pool-800: #1d4760;
+  --color-pool-900: #16354a;
+
+  --color-coral-50: #fff3ee;
+  --color-coral-100: #ffe2d4;
+  --color-coral-300: #ffab86;
+  --color-coral-400: #ff8a5c;
+  --color-coral-500: #ff6b3d;
+  --color-coral-600: #ea4f20;
+  --color-coral-700: #c23e17;
+
+  --color-card: #fdfefe;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-pool-50: var(--color-pool-50);
+  --color-pool-100: var(--color-pool-100);
+  --color-pool-200: var(--color-pool-200);
+  --color-pool-300: var(--color-pool-300);
+  --color-pool-400: var(--color-pool-400);
+  --color-pool-500: var(--color-pool-500);
+  --color-pool-600: var(--color-pool-600);
+  --color-pool-700: var(--color-pool-700);
+  --color-pool-800: var(--color-pool-800);
+  --color-pool-900: var(--color-pool-900);
+
+  --color-coral-50: var(--color-coral-50);
+  --color-coral-100: var(--color-coral-100);
+  --color-coral-300: var(--color-coral-300);
+  --color-coral-400: var(--color-coral-400);
+  --color-coral-500: var(--color-coral-500);
+  --color-coral-600: var(--color-coral-600);
+  --color-coral-700: var(--color-coral-700);
+
+  --color-card: var(--color-card);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
